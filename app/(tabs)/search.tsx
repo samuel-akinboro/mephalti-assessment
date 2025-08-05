@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, FlatList, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { router } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
@@ -20,6 +20,7 @@ export default function SearchScreen() {
   
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -76,57 +77,74 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={{
-      flex: 1,
-      backgroundColor: theme.background,
-    }}>
-      {/* Search Header */}
-      <View style={{
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: theme.border,
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: theme.background,
       }}>
-        <Text style={{
-          color: theme.text,
-          fontSize: 28,
-          fontWeight: 'bold',
-          marginBottom: 16,
-        }}>
-          Search
-        </Text>
-        
+        {/* Search Header */}
         <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: theme.surface,
-          borderRadius: 12,
-          paddingHorizontal: 16,
-          paddingVertical: 12,
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.border,
         }}>
-          <Text style={{ fontSize: 20, marginRight: 12 }}>🔍</Text>
-          <TextInput
-            style={{
-              flex: 1,
-              color: theme.text,
-              fontSize: 16,
-            }}
-            placeholder="Search for movies..."
-            placeholderTextColor={theme.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoFocus
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearchQuery('')}
-              style={{ marginLeft: 8 }}
-            >
-              <Text style={{ fontSize: 20 }}>✕</Text>
-            </TouchableOpacity>
-          )}
+          <Text style={{
+            color: theme.text,
+            fontSize: 28,
+            fontWeight: 'bold',
+            marginBottom: 16,
+          }}>
+            Search
+          </Text>
+          
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.surface,
+            borderRadius: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+          }}>
+            <Text style={{ fontSize: 20, marginRight: 12 }}>🔍</Text>
+            <TextInput
+              ref={searchInputRef}
+              style={{
+                flex: 1,
+                color: theme.text,
+                fontSize: 16,
+              }}
+              placeholder="Search for movies..."
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoFocus
+              returnKeyType="search"
+              onSubmitEditing={() => {
+                if (searchQuery.trim()) {
+                  searchMovies(searchQuery);
+                }
+              }}
+              blurOnSubmit={false}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchQuery('');
+                  searchInputRef.current?.focus();
+                }}
+                style={{ marginLeft: 8 }}
+              >
+                <Text style={{ fontSize: 20 }}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </View>
 
       {/* Search Results */}
       {isLoading && searchQuery.trim() ? (
@@ -187,6 +205,8 @@ export default function SearchScreen() {
       ) : (
         renderEmptyState()
       )}
-    </SafeAreaView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 } 
