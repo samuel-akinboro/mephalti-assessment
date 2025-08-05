@@ -8,7 +8,9 @@ import Animated, {
   withSpring,
   withTiming,
   interpolate,
-  Extrapolate 
+  Extrapolate, 
+  useAnimatedScrollHandler,
+  SharedValue
 } from 'react-native-reanimated';
 import { useMovieStore, Movie, getImageUrl } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
@@ -36,6 +38,10 @@ export default function HomeScreen() {
 
   const CARD_WIDTH = width - 40;
   const CARD_SPACING = 12
+  const scrollX = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler(e => {
+    scrollX.value = e.contentOffset.x / (CARD_WIDTH + CARD_SPACING)
+  })
 
   useEffect(() => {
     fetchPopularMovies();
@@ -49,7 +55,20 @@ export default function HomeScreen() {
     />
   );
 
-  const renderLiveNowItem = ({ item, index }: { item: Movie; index: number }) => {
+  const LiveNowItem = ({ item, index, scrollX }: { item: Movie; index: number, scrollX: SharedValue<number> }) => {
+    const stylez = useAnimatedStyle(() => {
+      return {
+        transform: [
+          {
+            scale: interpolate(scrollX.value,
+              [index-1, index, index+1],
+              [1.4, 1, 1.4]
+            )
+          }
+        ]
+      }
+    })
+
     return (
       <ImageBackground 
         style={{
@@ -159,13 +178,13 @@ export default function HomeScreen() {
           <View style={{
             width: CARD_WIDTH * 0.40,
             height: '100%',
+            overflow: 'hidden'
           }}>
-            <Image
+            <Animated.Image
               source={{ uri: getImageUrl(item.backdrop_path, 'large') || 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
-              style={{
-                width: '100%',
-                height: '100%',
-              }}
+              style={[{
+                flex: 1
+              }, stylez]}
               resizeMode="cover"
             />
           </View>
@@ -361,9 +380,9 @@ export default function HomeScreen() {
 
         {/* Live Now Section */}
         <View style={{ marginBottom: 32 }}>
-          <FlatList
+          <Animated.FlatList
             data={popularMovies.slice(0, 5)}
-            renderItem={renderLiveNowItem}
+            renderItem={({item, index}) => <LiveNowItem item={item} index={index} scrollX={scrollX} />}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: (width - CARD_WIDTH)/2, gap: CARD_SPACING }}
@@ -374,6 +393,8 @@ export default function HomeScreen() {
               const index = Math.round(event.nativeEvent.contentOffset.x / (width - 40 + 20));
               setActiveLiveIndex(index);
             }}
+            onScroll={onScroll}
+            scrollEventThrottle={1000/60}
           />
           
           {/* Pagination Dots */}
