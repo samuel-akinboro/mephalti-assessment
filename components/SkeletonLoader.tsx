@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Dimensions } from 'react-native';
+import { View, Dimensions, FlatList } from 'react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -185,11 +185,14 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           </View>
         ));
       default:
-        return Array(count).fill(0).map((_, index) => (
-          <View key={index}>
-            {renderMovieCardSkeleton()}
-          </View>
-        ));
+        return <FlatList
+          horizontal
+          data={Array(count).fill(0)}
+          renderItem={renderMovieCardSkeleton}
+          keyExtractor={(item, index) => `${index}`}
+          showsHorizontalScrollIndicator={false}
+          style={{paddingHorizontal: 20}}
+        />
     }
   };
 

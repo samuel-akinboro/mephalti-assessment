@@ -292,9 +292,7 @@ export default function HomeScreen() {
               }} />
             </View>
             
-            <View style={{ paddingHorizontal: 20 }}>
-              <SkeletonLoader type="movie-card" count={5} />
-            </View>
+            <SkeletonLoader type="movie-card" count={5} />
           </View>
 
           {/* Top Rated Skeleton */}
@@ -320,9 +318,7 @@ export default function HomeScreen() {
               }} />
             </View>
             
-            <View style={{ paddingHorizontal: 20 }}>
-              <SkeletonLoader type="movie-card" count={5} />
-            </View>
+            <SkeletonLoader type="movie-card" count={5} />
           </View>
         </ScrollView>
       </SafeAreaView>
