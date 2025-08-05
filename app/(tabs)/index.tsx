@@ -110,6 +110,7 @@ export default function HomeScreen() {
           }}>
             <BlurView
               intensity={40}
+              experimentalBlurMethod='dimezisBlurView'
               style={{
                 position: 'absolute',
                 top: 0,
@@ -404,10 +405,7 @@ export default function HomeScreen() {
             pagingEnabled
             snapToInterval={CARD_WIDTH + CARD_SPACING}
             decelerationRate={'fast'}
-            onMomentumScrollEnd={(event) => {
-              const index = Math.round(event.nativeEvent.contentOffset.x / (width - 40 + 20));
-              setActiveLiveIndex(index);
-            }}
+            
             onScroll={onScroll}
             scrollEventThrottle={1000/60}
           />
@@ -418,18 +416,46 @@ export default function HomeScreen() {
             justifyContent: 'center',
             marginTop: 16,
           }}>
-            {popularMovies.slice(0, 5).map((_, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: index === activeLiveIndex ? theme.primary : theme.border,
-                  marginHorizontal: 4,
-                }}
-              />
-            ))}
+            {popularMovies.slice(0, 5).map((_, index) => {
+              const PaginationDot = () => {
+                const dotStyle = useAnimatedStyle(() => {
+                  const inputRange = [index - 0.5, index, index + 0.5];
+                  const outputRange = [0.3, 1, 0.3];
+                  
+                  return {
+                    opacity: interpolate(
+                      scrollX.value,
+                      inputRange,
+                      outputRange,
+                      Extrapolate.CLAMP
+                    ),
+                    transform: [{
+                      scale: interpolate(
+                        scrollX.value,
+                        inputRange,
+                        outputRange,
+                        Extrapolate.CLAMP
+                      )
+                    }]
+                  };
+                });
+
+                return (
+                  <Animated.View
+                    key={index}
+                    style={[{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: theme.primary,
+                      marginHorizontal: 4,
+                    }, dotStyle]}
+                  />
+                );
+              };
+
+              return <PaginationDot key={index} />;
+            })}
           </View>
         </View>
 
