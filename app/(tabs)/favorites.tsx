@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
 
 export default function FavoritesScreen() {
-  const { isDarkMode, favorites } = useMovieStore();
+  const { isDarkMode, favorites, isLoading } = useMovieStore();
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   const renderMovieItem = ({ item, index }: { item: Movie; index: number }) => (
@@ -99,7 +100,11 @@ export default function FavoritesScreen() {
       </View>
 
       {/* Favorites List */}
-      {favorites.length > 0 ? (
+      {isLoading ? (
+        <View style={{ padding: 20 }}>
+          <SkeletonLoader type="movie-card" count={6} />
+        </View>
+      ) : favorites.length > 0 ? (
         <FlatList
           data={favorites}
           renderItem={renderMovieItem}

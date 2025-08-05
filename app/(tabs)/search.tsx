@@ -6,6 +6,7 @@ import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
 
 export default function SearchScreen() {
@@ -129,7 +130,9 @@ export default function SearchScreen() {
 
       {/* Search Results */}
       {isLoading && searchQuery.trim() ? (
-        <LoadingSpinner message="Searching..." />
+        <View style={{ padding: 20 }}>
+          <SkeletonLoader type="movie-card" count={6} />
+        </View>
       ) : error && searchQuery.trim() ? (
         <ErrorMessage message={error} onRetry={() => searchMovies(searchQuery)} />
       ) : searchQuery.trim() ? (

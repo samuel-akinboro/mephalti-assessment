@@ -14,6 +14,7 @@ import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
 
 const { width } = Dimensions.get('window');
@@ -142,7 +143,124 @@ export default function HomeScreen() {
   );
 
   if (isLoading && popularMovies.length === 0) {
-    return <LoadingSpinner message="Loading movies..." />;
+    return (
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: theme.background,
+      }}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* Header Skeleton */}
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+          }}>
+            <View>
+              <View style={{
+                height: 14,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                marginBottom: 4,
+                width: 100,
+              }} />
+              <View style={{
+                height: 24,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                width: 150,
+              }} />
+            </View>
+            
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
+              {[1, 2, 3].map((_, index) => (
+                <View key={index} style={{
+                  width: 20,
+                  height: 20,
+                  backgroundColor: theme.border,
+                  borderRadius: 10,
+                  marginLeft: 16,
+                }} />
+              ))}
+            </View>
+          </View>
+
+          {/* Live Now Skeleton */}
+          <View style={{ marginBottom: 32 }}>
+            <View style={{
+              width: width - 40,
+              height: 200,
+              backgroundColor: theme.border,
+              borderRadius: 16,
+              marginHorizontal: 20,
+            }} />
+          </View>
+
+          {/* Latest Movies Skeleton */}
+          <View style={{ marginBottom: 32 }}>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+              marginBottom: 16,
+            }}>
+              <View style={{
+                height: 20,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                width: 120,
+              }} />
+              <View style={{
+                height: 14,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                width: 60,
+              }} />
+            </View>
+            
+            <View style={{ paddingHorizontal: 20 }}>
+              <SkeletonLoader type="movie-card" count={5} />
+            </View>
+          </View>
+
+          {/* Top Rated Skeleton */}
+          <View>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+              marginBottom: 16,
+            }}>
+              <View style={{
+                height: 20,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                width: 100,
+              }} />
+              <View style={{
+                height: 14,
+                backgroundColor: theme.border,
+                borderRadius: 4,
+                width: 60,
+              }} />
+            </View>
+            
+            <View style={{ paddingHorizontal: 20 }}>
+              <SkeletonLoader type="movie-card" count={5} />
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
   }
 
   if (error && popularMovies.length === 0) {

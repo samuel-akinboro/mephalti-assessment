@@ -14,6 +14,7 @@ import { useMovieStore, Cast } from '../store/movieStore';
 import { getImageUrl, getBackdropUrl, getProfileUrl } from '../config/api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { SkeletonLoader } from '../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../constants/Theme';
 
 const { width, height } = Dimensions.get('window');
@@ -99,7 +100,21 @@ export default function MovieDetailsScreen() {
   );
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading movie details..." />;
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        {/* Backdrop Skeleton */}
+        <View style={{ height: height * 0.5, backgroundColor: theme.border }} />
+        
+        {/* Content Skeleton */}
+        <ScrollView 
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          <SkeletonLoader type="movie-details" count={1} />
+        </ScrollView>
+      </View>
+    );
   }
 
   if (error || !movieDetails) {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -6,6 +6,7 @@ import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
 
 export default function SeeAllScreen() {
@@ -14,17 +15,20 @@ export default function SeeAllScreen() {
     isDarkMode, 
     popularMovies, 
     isLoading, 
+    isLoadingMore,
     error, 
-    fetchPopularMovies 
+    currentPage,
+    hasMorePages,
+    fetchPopularMovies,
+    resetPagination
   } = useMovieStore();
   
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   useEffect(() => {
-    if (popularMovies.length === 0) {
-      fetchPopularMovies();
-    }
-  }, []);
+    resetPagination();
+    fetchPopularMovies(1);
+  }, [type]);
 
   const getTitle = () => {
     switch (type) {
@@ -38,15 +42,14 @@ export default function SeeAllScreen() {
   };
 
   const getMovies = () => {
-    switch (type) {
-      case 'latest':
-        return popularMovies.slice(0, 20);
-      case 'top-rated':
-        return popularMovies.slice(10, 30);
-      default:
-        return popularMovies;
-    }
+    return popularMovies;
   };
+
+  const loadMoreMovies = useCallback(() => {
+    if (!isLoadingMore && hasMorePages) {
+      fetchPopularMovies(currentPage + 1);
+    }
+  }, [isLoadingMore, hasMorePages, currentPage, fetchPopularMovies]);
 
   const renderMovieItem = ({ item, index }: { item: Movie; index: number }) => (
     <MovieCard
@@ -57,11 +60,49 @@ export default function SeeAllScreen() {
   );
 
   if (isLoading && popularMovies.length === 0) {
-    return <LoadingSpinner message="Loading movies..." />;
+    return (
+      <SafeAreaView style={{
+        flex: 1,
+        backgroundColor: theme.background,
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.border,
+        }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              padding: 8,
+            }}
+          >
+            <Text style={{ fontSize: 20 }}>←</Text>
+          </TouchableOpacity>
+          
+          <Text style={{
+            color: theme.text,
+            fontSize: 20,
+            fontWeight: 'bold',
+          }}>
+            {getTitle()}
+          </Text>
+          
+          <View style={{ width: 36 }} />
+        </View>
+        
+        <View style={{ padding: 20 }}>
+          <SkeletonLoader type="movie-card" count={8} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (error && popularMovies.length === 0) {
-    return <ErrorMessage message={error} onRetry={fetchPopularMovies} />;
+    return <ErrorMessage message={error} onRetry={() => fetchPopularMovies(1)} />;
   }
 
   return (
@@ -107,6 +148,15 @@ export default function SeeAllScreen() {
         numColumns={2}
         contentContainerStyle={{ padding: 20 }}
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMoreMovies}
+        onEndReachedThreshold={0.1}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={{ paddingVertical: 20 }}>
+              <SkeletonLoader type="movie-card" count={4} />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View style={{
             flex: 1,

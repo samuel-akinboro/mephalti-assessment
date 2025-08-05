@@ -56,7 +56,10 @@ interface MovieState {
   searchResults: Movie[];
   movieDetails: MovieDetails | null;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  currentPage: number;
+  hasMorePages: boolean;
   
   // Favorites
   favorites: Movie[];
@@ -65,10 +68,11 @@ interface MovieState {
   isFavorite: (movieId: number) => boolean;
   
   // API calls
-  fetchPopularMovies: () => Promise<void>;
+  fetchPopularMovies: (page?: number) => Promise<void>;
   searchMovies: (query: string) => Promise<void>;
   fetchMovieDetails: (movieId: number) => Promise<void>;
   clearSearch: () => void;
+  resetPagination: () => void;
 }
 
 // Re-export helper functions for backward compatibility
@@ -86,7 +90,10 @@ export const useMovieStore = create<MovieState>()(
       searchResults: [],
       movieDetails: null,
       isLoading: false,
+      isLoadingMore: false,
       error: null,
+      currentPage: 1,
+      hasMorePages: true,
       
       // Favorites
       favorites: [],
@@ -106,19 +113,38 @@ export const useMovieStore = create<MovieState>()(
       },
       
       // API calls
-      fetchPopularMovies: async () => {
-        set({ isLoading: true, error: null });
+      fetchPopularMovies: async (page = 1) => {
+        if (page === 1) {
+          set({ isLoading: true, error: null });
+        } else {
+          set({ isLoadingMore: true });
+        }
+        
         try {
           const response = await axios.get(`${API_CONFIG.TMDB_BASE_URL}/movie/popular`, {
             params: {
               api_key: API_CONFIG.TMDB_API_KEY,
               language: 'en-US',
-              page: 1,
+              page,
             },
           });
-          set({ popularMovies: response.data.results, isLoading: false });
+          
+          const newMovies = response.data.results;
+          const totalPages = response.data.total_pages;
+          
+          set((state) => ({
+            popularMovies: page === 1 ? newMovies : [...state.popularMovies, ...newMovies],
+            currentPage: page,
+            hasMorePages: page < totalPages,
+            isLoading: false,
+            isLoadingMore: false,
+          }));
         } catch (error) {
-          set({ error: 'Failed to fetch popular movies', isLoading: false });
+          set({ 
+            error: 'Failed to fetch popular movies', 
+            isLoading: false, 
+            isLoadingMore: false 
+          });
         }
       },
       
@@ -172,6 +198,7 @@ export const useMovieStore = create<MovieState>()(
       },
       
       clearSearch: () => set({ searchResults: [] }),
+      resetPagination: () => set({ currentPage: 1, hasMorePages: true }),
     }),
     {
       name: 'movie-store',
