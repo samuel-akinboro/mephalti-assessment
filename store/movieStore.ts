@@ -60,6 +60,8 @@ interface MovieState {
   error: string | null;
   currentPage: number;
   hasMorePages: boolean;
+  searchCurrentPage: number;
+  searchHasMorePages: boolean;
   
   // Favorites
   favorites: Movie[];
@@ -69,7 +71,7 @@ interface MovieState {
   
   // API calls
   fetchPopularMovies: (page?: number) => Promise<void>;
-  searchMovies: (query: string) => Promise<void>;
+  searchMovies: (query: string, page?: number) => Promise<void>;
   fetchMovieDetails: (movieId: number) => Promise<void>;
   clearSearch: () => void;
   resetPagination: () => void;
@@ -94,6 +96,8 @@ export const useMovieStore = create<MovieState>()(
       error: null,
       currentPage: 1,
       hasMorePages: true,
+      searchCurrentPage: 1,
+      searchHasMorePages: true,
       
       // Favorites
       favorites: [],
@@ -148,25 +152,40 @@ export const useMovieStore = create<MovieState>()(
         }
       },
       
-      searchMovies: async (query) => {
+      searchMovies: async (query, page = 1) => {
         if (!query.trim()) {
           set({ searchResults: [] });
           return;
         }
         
-        set({ isLoading: true, error: null });
+        if (page === 1) {
+          set({ isLoading: true, error: null });
+        } else {
+          set({ isLoadingMore: true });
+        }
+        
         try {
           const response = await axios.get(`${API_CONFIG.TMDB_BASE_URL}/search/movie`, {
             params: {
               api_key: API_CONFIG.TMDB_API_KEY,
               language: 'en-US',
               query: query.trim(),
-              page: 1,
+              page,
             },
           });
-          set({ searchResults: response.data.results, isLoading: false });
+          
+          const newResults = response.data.results;
+          const totalPages = response.data.total_pages;
+          
+          set((state) => ({
+            searchResults: page === 1 ? newResults : [...state.searchResults, ...newResults],
+            searchCurrentPage: page,
+            searchHasMorePages: page < totalPages,
+            isLoading: false,
+            isLoadingMore: false,
+          }));
         } catch (error) {
-          set({ error: 'Failed to search movies', isLoading: false });
+          set({ error: 'Failed to search movies', isLoading: false, isLoadingMore: false });
         }
       },
       
@@ -197,7 +216,7 @@ export const useMovieStore = create<MovieState>()(
         }
       },
       
-      clearSearch: () => set({ searchResults: [] }),
+      clearSearch: () => set({ searchResults: [], searchCurrentPage: 1, searchHasMorePages: true }),
       resetPagination: () => set({ currentPage: 1, hasMorePages: true }),
     }),
     {

@@ -13,7 +13,10 @@ export default function SearchScreen() {
     isDarkMode, 
     searchResults, 
     isLoading, 
+    isLoadingMore,
     error, 
+    searchCurrentPage,
+    searchHasMorePages,
     searchMovies, 
     clearSearch 
   } = useMovieStore();
@@ -25,7 +28,7 @@ export default function SearchScreen() {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery.trim()) {
-        searchMovies(searchQuery);
+        searchMovies(searchQuery, 1);
       } else {
         clearSearch();
       }
@@ -33,6 +36,12 @@ export default function SearchScreen() {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+
+  const loadMoreSearchResults = () => {
+    if (!isLoadingMore && searchHasMorePages && searchQuery.trim()) {
+      searchMovies(searchQuery, searchCurrentPage + 1);
+    }
+  };
 
   const renderMovieItem = ({ item, index }: { item: Movie; index: number }) => (
     <MovieCard
@@ -168,6 +177,15 @@ export default function SearchScreen() {
           contentContainerStyle={{ padding: 20 }}
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMoreSearchResults}
+          onEndReachedThreshold={0.1}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={{ paddingVertical: 20 }}>
+                <SkeletonLoader type="movie-card" count={4} />
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={{
               flex: 1,
