@@ -108,17 +108,25 @@ export default function HomeScreen() {
             padding: 20,
             justifyContent: 'space-between',
           }}>
-            <BlurView
-              intensity={40}
-              experimentalBlurMethod='dimezisBlurView'
-              style={{
+            <Animated.View style={[
+              {
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0
-              }}
-            />
+              },
+              // textStyle
+            ]}>
+              <BlurView
+                intensity={40}
+                experimentalBlurMethod='dimezisBlurView'
+                style={{
+                  width: 'auto',
+                  height: '100%'
+                }}
+              />
+            </Animated.View>
 
             <Animated.View style={textStyle}>
               <View style={{
@@ -169,7 +177,7 @@ export default function HomeScreen() {
                 </Text>
             </Animated.View>
             
-                         <TouchableOpacity 
+            <TouchableOpacity 
                style={{
                  backgroundColor: theme.primary,
                  paddingHorizontal: 20,

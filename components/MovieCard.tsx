@@ -13,15 +13,16 @@ import { lightTheme, darkTheme } from '../constants/Theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
-const cardWidth = width * 0.4;
+const cardWidthDefault = width * 0.4;
 
 interface MovieCardProps {
   movie: Movie;
   onPress: () => void;
   index?: number;
+  cardWidth?: number;
 }
 
-export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0 }) => {
+export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0, cardWidth=cardWidthDefault }) => {
   const { isDarkMode, isFavorite, addToFavorites, removeFromFavorites } = useMovieStore();
   const theme = isDarkMode ? darkTheme : lightTheme;
   

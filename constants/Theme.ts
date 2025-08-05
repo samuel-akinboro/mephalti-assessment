@@ -1,3 +1,6 @@
+import { Dimensions } from 'react-native';
+const { width, height } = Dimensions.get('window');
+
 export const lightTheme = {
   background: '#FFFFFF',
   surface: '#F8F9FA',
@@ -28,4 +31,6 @@ export const darkTheme = {
   cardShadow: '#00000040',
 };
 
-export type Theme = typeof lightTheme; 
+export { width as screenWidth, height as screenHeight };
+
+export type Theme = typeof lightTheme;

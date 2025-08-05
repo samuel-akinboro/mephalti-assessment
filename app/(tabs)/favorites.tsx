@@ -1,11 +1,10 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
-import { lightTheme, darkTheme } from '../../constants/Theme';
+import { lightTheme, darkTheme, screenWidth } from '../../constants/Theme';
 
 export default function FavoritesScreen() {
   const { isDarkMode, favorites, isLoading } = useMovieStore();
@@ -16,6 +15,7 @@ export default function FavoritesScreen() {
       movie={item}
       onPress={() => router.push(`/movie-details?id=${item.id}`)}
       index={index}
+      cardWidth={(screenWidth - 52) / 2}
     />
   );
 
@@ -111,6 +111,7 @@ export default function FavoritesScreen() {
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={{ padding: 20 }}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
           showsVerticalScrollIndicator={false}
         />
       ) : (
