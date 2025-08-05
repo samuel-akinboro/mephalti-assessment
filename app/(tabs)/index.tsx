@@ -34,6 +34,9 @@ export default function HomeScreen() {
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [activeLiveIndex, setActiveLiveIndex] = useState(0);
 
+  const CARD_WIDTH = width - 40;
+  const CARD_SPACING = 12
+
   useEffect(() => {
     fetchPopularMovies();
   }, []);
@@ -47,8 +50,6 @@ export default function HomeScreen() {
   );
 
   const renderLiveNowItem = ({ item, index }: { item: Movie; index: number }) => {
-    const CARD_WIDTH = width - 40;
-  
     return (
       <ImageBackground 
         style={{
@@ -113,7 +114,7 @@ export default function HomeScreen() {
               
                               <Text 
                   style={{
-                    color: theme.text,
+                    color: '#fff',
                     fontSize: 18,
                     fontWeight: 'bold',
                     marginBottom: 8,
@@ -125,7 +126,7 @@ export default function HomeScreen() {
                 </Text>
                 
                 <Text numberOfLines={2} style={{
-                  color: theme.text,
+                  color: '#fff',
                   fontSize: 14,
                   lineHeight: 20,
                 }}>
@@ -365,8 +366,10 @@ export default function HomeScreen() {
             renderItem={renderLiveNowItem}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
+            contentContainerStyle={{ paddingHorizontal: (width - CARD_WIDTH)/2, gap: CARD_SPACING }}
             pagingEnabled
+            snapToInterval={CARD_WIDTH + CARD_SPACING}
+            decelerationRate={'fast'}
             onMomentumScrollEnd={(event) => {
               const index = Math.round(event.nativeEvent.contentOffset.x / (width - 40 + 20));
               setActiveLiveIndex(index);
