@@ -18,6 +18,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 
 
 const { width } = Dimensions.get('window');
@@ -361,7 +362,7 @@ export default function HomeScreen() {
               fontSize: 24,
               fontWeight: 'bold',
             }}>
-              Yacob Krisna
+              Blackvibes
             </Text>
           </View>
           
@@ -376,17 +377,11 @@ export default function HomeScreen() {
                 padding: 8,
               }}
             >
-              <Text style={{ fontSize: 20 }}>
-                {isDarkMode ? '🌙' : '☀️'}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={{ marginRight: 16 }}>
-              <Text style={{ fontSize: 20 }}>🔔</Text>
+              <Ionicons name={!isDarkMode ? 'moon-outline' : 'sunny-outline'} size={20} color={theme.text} />
             </TouchableOpacity>
             
             <TouchableOpacity>
-              <Text style={{ fontSize: 20 }}>🔍</Text>
+              <Ionicons name='notifications-outline' size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
