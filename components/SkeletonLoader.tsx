@@ -12,16 +12,18 @@ import { useMovieStore } from '../store/movieStore';
 import { lightTheme, darkTheme } from '../constants/Theme';
 
 const { width } = Dimensions.get('window');
-const cardWidth = width * 0.4;
+const cardWidthDefault = width * 0.4;
 
 interface SkeletonLoaderProps {
-  type?: 'movie-card' | 'movie-details' | 'cast-item';
+  type?: 'movie-card' | 'movie-details' | 'cast-item' | 'movie-card-individual';
   count?: number;
+  cardWidth?: number;
 }
 
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({ 
   type = 'movie-card', 
-  count = 6 
+  count = 6,
+  cardWidth = cardWidthDefault
 }) => {
   const { isDarkMode } = useMovieStore();
   const theme = isDarkMode ? darkTheme : lightTheme;
@@ -49,7 +51,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     };
   });
 
-  const renderMovieCardSkeleton = () => (
+  const renderMovieCardSkeleton = (cardWidth?: number) => (
     <View style={{
       width: cardWidth,
       marginRight: 12,
@@ -63,7 +65,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         {/* Poster Skeleton */}
         <Animated.View style={[{
           width: '100%',
-          height: cardWidth * 1.5,
+          height: cardWidth ? cardWidth * 1.5 : cardWidthDefault * 1.5,
           backgroundColor: theme.border,
         }, shimmerStyle]} />
         
@@ -174,7 +176,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     </View>
   );
 
-  const renderSkeleton = () => {
+  const renderSkeleton = (cardWidth?: number) => {
     switch (type) {
       case 'movie-details':
         return renderMovieDetailsSkeleton();
@@ -184,11 +186,13 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
             {renderCastItemSkeleton()}
           </View>
         ));
+      case 'movie-card-individual':
+        return renderMovieCardSkeleton(cardWidth);
       default:
         return <FlatList
           horizontal
           data={Array(count).fill(0)}
-          renderItem={renderMovieCardSkeleton}
+          renderItem={({ item, index }) => renderMovieCardSkeleton(cardWidth)}
           keyExtractor={(item, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           style={{paddingHorizontal: 20}}
@@ -198,7 +202,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
   return (
     <View style={{ flexDirection: type === 'cast-item' ? 'row' : 'column' }}>
-      {renderSkeleton()}
+      {renderSkeleton(cardWidth)}
     </View>
   );
 }; 

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TextInput, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
-import { lightTheme, darkTheme } from '../../constants/Theme';
+import { lightTheme, darkTheme, screenWidth } from '../../constants/Theme';
 
 export default function SearchScreen() {
   const { 
@@ -39,6 +38,7 @@ export default function SearchScreen() {
       movie={item}
       onPress={() => router.push(`/movie-details?id=${item.id}`)}
       index={index}
+      cardWidth={(screenWidth - 52) / 2}
     />
   );
 
@@ -130,9 +130,15 @@ export default function SearchScreen() {
 
       {/* Search Results */}
       {isLoading && searchQuery.trim() ? (
-        <View style={{ padding: 20 }}>
-          <SkeletonLoader type="movie-card" count={6} />
-        </View>
+        <FlatList
+        data={Array(6).fill(0)}
+        renderItem={() => <SkeletonLoader type="movie-card-individual" cardWidth={(screenWidth - 52) / 2} />}
+        keyExtractor={(item, index) => `${index}`}
+        numColumns={2}
+        contentContainerStyle={{ padding: 20 }}
+        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        showsVerticalScrollIndicator={false}
+      />
       ) : error && searchQuery.trim() ? (
         <ErrorMessage message={error} onRetry={() => searchMovies(searchQuery)} />
       ) : searchQuery.trim() ? (
@@ -142,6 +148,7 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={{ padding: 20 }}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={{
