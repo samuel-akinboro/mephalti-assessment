@@ -1,31 +1,320 @@
-import { StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring,
+  withTiming,
+  interpolate,
+  Extrapolate 
+} from 'react-native-reanimated';
+import { useMovieStore, Movie } from '../../store/movieStore';
+import { MovieCard } from '../../components/MovieCard';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { ErrorMessage } from '../../components/ErrorMessage';
+import { lightTheme, darkTheme } from '../../constants/Theme';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+const { width } = Dimensions.get('window');
 
-export default function TabOneScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+export default function HomeScreen() {
+  const { 
+    isDarkMode, 
+    toggleTheme, 
+    popularMovies, 
+    isLoading, 
+    error, 
+    fetchPopularMovies 
+  } = useMovieStore();
+  
+  const theme = isDarkMode ? darkTheme : lightTheme;
+
+  useEffect(() => {
+    fetchPopularMovies();
+  }, []);
+
+  const renderMovieItem = ({ item, index }: { item: Movie; index: number }) => (
+    <MovieCard
+      movie={item}
+      onPress={() => router.push(`/movie-details?id=${item.id}`)}
+      index={index}
+    />
+  );
+
+  const renderLiveNowItem = ({ item, index }: { item: any; index: number }) => (
+    <View style={{
+      width: width - 40,
+      marginRight: 20,
+      backgroundColor: theme.card,
+      borderRadius: 16,
+      overflow: 'hidden',
+      shadowColor: theme.cardShadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 8,
+    }}>
+      <View style={{
+        flexDirection: 'row',
+        height: 200,
+      }}>
+        {/* Left Content */}
+        <View style={{
+          flex: 1,
+          padding: 20,
+          justifyContent: 'space-between',
+        }}>
+          <View>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}>
+              <View style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: '#FF3B30',
+                marginRight: 8,
+              }} />
+              <Text style={{
+                color: '#FF3B30',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}>
+                Live now
+              </Text>
+            </View>
+            
+            <Text style={{
+              color: theme.text,
+              fontSize: 18,
+              fontWeight: 'bold',
+              marginBottom: 8,
+              lineHeight: 24,
+            }}>
+              Nonton bareng Ashiap Man 2022
+            </Text>
+            
+            <Text style={{
+              color: theme.textSecondary,
+              fontSize: 14,
+              lineHeight: 20,
+            }}>
+              Nobar Livestream Ashiap man 2022 disini
+            </Text>
+          </View>
+          
+          <TouchableOpacity style={{
+            backgroundColor: theme.primary,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 8,
+            alignSelf: 'flex-start',
+          }}>
+            <Text style={{
+              color: '#FFFFFF',
+              fontSize: 14,
+              fontWeight: 'bold',
+            }}>
+              Click here
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Right Image */}
+        <View style={{
+          width: 120,
+          height: '100%',
+        }}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/120x200/4A90E2/FFFFFF?text=ASHIAP+MAN' }}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+        </View>
+      </View>
     </View>
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+  if (isLoading && popularMovies.length === 0) {
+    return <LoadingSpinner message="Loading movies..." />;
+  }
+
+  if (error && popularMovies.length === 0) {
+    return <ErrorMessage message={error} onRetry={fetchPopularMovies} />;
+  }
+
+  return (
+    <SafeAreaView style={{
+      flex: 1,
+      backgroundColor: theme.background,
+    }}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+        }}>
+          <View>
+            <Text style={{
+              color: theme.textSecondary,
+              fontSize: 14,
+              marginBottom: 4,
+            }}>
+              Welcome back,
+            </Text>
+            <Text style={{
+              color: theme.text,
+              fontSize: 24,
+              fontWeight: 'bold',
+            }}>
+              Yacob Krisna
+            </Text>
+          </View>
+          
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+            <TouchableOpacity
+              onPress={toggleTheme}
+              style={{
+                marginRight: 16,
+                padding: 8,
+              }}
+            >
+              <Text style={{ fontSize: 20 }}>
+                {isDarkMode ? '🌙' : '☀️'}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={{ marginRight: 16 }}>
+              <Text style={{ fontSize: 20 }}>🔔</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity>
+              <Text style={{ fontSize: 20 }}>🔍</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Live Now Section */}
+        <View style={{ marginBottom: 32 }}>
+          <FlatList
+            data={[{ id: 1 }]} // Single item for now
+            renderItem={renderLiveNowItem}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+            pagingEnabled
+          />
+          
+          {/* Pagination Dots */}
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginTop: 16,
+          }}>
+            {[1, 2, 3, 4].map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: index === 0 ? theme.primary : theme.border,
+                  marginHorizontal: 4,
+                }}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Latest Movies Section */}
+        <View style={{ marginBottom: 32 }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            marginBottom: 16,
+          }}>
+            <Text style={{
+              color: theme.text,
+              fontSize: 20,
+              fontWeight: 'bold',
+            }}>
+              Latest movies
+            </Text>
+            <TouchableOpacity>
+              <Text style={{
+                color: theme.primary,
+                fontSize: 14,
+                fontWeight: '600',
+              }}>
+                See all
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={popularMovies.slice(0, 10)}
+            renderItem={renderMovieItem}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+
+        {/* Top Rated Section */}
+        <View>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            marginBottom: 16,
+          }}>
+            <Text style={{
+              color: theme.text,
+              fontSize: 20,
+              fontWeight: 'bold',
+            }}>
+              Top rated
+            </Text>
+            <TouchableOpacity>
+              <Text style={{
+                color: theme.primary,
+                fontSize: 14,
+                fontWeight: '600',
+              }}>
+                See all
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={popularMovies.slice(10, 20)}
+            renderItem={renderMovieItem}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
+            keyExtractor={(item) => item.id.toString()}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

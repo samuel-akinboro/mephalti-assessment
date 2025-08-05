@@ -3,8 +3,10 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import '../global.css';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useColorScheme } from '@/components/useColorScheme';
 
@@ -47,12 +49,58 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkOnboardingStatus();
+  }, []);
+
+  const checkOnboardingStatus = async () => {
+    try {
+      const value = await AsyncStorage.getItem('hasSeenOnboarding');
+      setHasSeenOnboarding(value === 'true');
+    } catch (error) {
+      setHasSeenOnboarding(false);
+    }
+  };
+
+  const markOnboardingComplete = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+      setHasSeenOnboarding(true);
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+    }
+  };
+
+  if (hasSeenOnboarding === null) {
+    return null; // Still loading
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        {!hasSeenOnboarding ? (
+          <Stack.Screen 
+            name="onboarding" 
+            options={{ 
+              headerShown: false,
+              gestureEnabled: false,
+            }} 
+          />
+        ) : (
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen 
+              name="movie-details" 
+              options={{ 
+                headerShown: false,
+                presentation: 'card',
+              }} 
+            />
+          </>
+        )}
       </Stack>
     </ThemeProvider>
   );
