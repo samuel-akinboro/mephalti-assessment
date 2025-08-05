@@ -1,7 +1,7 @@
 export const lightTheme = {
   background: '#FFFFFF',
   surface: '#F8F9FA',
-  primary: '#007AFF',
+  primary: '#0085FE',
   secondary: '#5856D6',
   text: '#000000',
   textSecondary: '#6C757D',
@@ -16,7 +16,7 @@ export const lightTheme = {
 export const darkTheme = {
   background: '#000000',
   surface: '#1C1C1E',
-  primary: '#0A84FF',
+  primary: '#0085FE',
   secondary: '#5E5CE6',
   text: '#FFFFFF',
   textSecondary: '#8E8E93',

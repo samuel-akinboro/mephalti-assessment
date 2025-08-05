@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Animated, { 
@@ -16,6 +16,8 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../../constants/Theme';
+import { BlurView } from 'expo-blur';
+
 
 const { width } = Dimensions.get('window');
 
@@ -43,104 +45,130 @@ export default function HomeScreen() {
     />
   );
 
-  const renderLiveNowItem = ({ item, index }: { item: any; index: number }) => (
-    <View style={{
-      width: width - 40,
-      marginRight: 20,
-      backgroundColor: theme.card,
-      borderRadius: 16,
-      overflow: 'hidden',
-      shadowColor: theme.cardShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 12,
-      elevation: 8,
-    }}>
-      <View style={{
-        flexDirection: 'row',
-        height: 200,
-      }}>
-        {/* Left Content */}
+  const renderLiveNowItem = ({ item, index }: { item: any; index: number }) => {
+    const CARD_WIDTH = width - 60;
+  
+    return (
+      <ImageBackground 
+        style={{
+          width: CARD_WIDTH,
+          // backgroundColor: theme.card,
+          borderRadius: 16,
+          overflow: 'hidden',
+          shadowColor: theme.cardShadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 12,
+          elevation: 8,
+        }}
+        source={{ uri: 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
+      >
         <View style={{
-          flex: 1,
-          padding: 20,
-          justifyContent: 'space-between',
+          flexDirection: 'row',
+          height: 200,
         }}>
-          <View>
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 8,
-            }}>
+          {/* Left Content */}
+          <View style={{
+            flex: 1,
+            padding: 20,
+            justifyContent: 'space-between',
+          }}>
+            <BlurView
+              intensity={40}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+            />
+
+            <View>
               <View style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: '#FF3B30',
-                marginRight: 8,
-              }} />
-              <Text style={{
-                color: '#FF3B30',
-                fontSize: 12,
-                fontWeight: 'bold',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 8,
+                backgroundColor: '#fff',
+                alignSelf: 'flex-start',
+                padding: 3,
+                borderRadius: 20,
+                paddingHorizontal: 7
               }}>
-                Live now
+                <View style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: '#FF3B30',
+                  marginRight: 8,
+                }} />
+                <Text style={{
+                  color: '#FF3B30',
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                }}>
+                  Live now
+                </Text>
+              </View>
+              
+              <Text 
+                style={{
+                  color: theme.text,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  marginBottom: 8,
+                  lineHeight: 24,
+                }}
+                numberOfLines={2}
+              >
+                Nonton bareng Ashiap Man 2022
+              </Text>
+              
+              <Text style={{
+                color: theme.text,
+                fontSize: 14,
+                lineHeight: 20,
+              }}>
+                Nobar Livestream Ashiap man 2022 disini
               </Text>
             </View>
             
-            <Text style={{
-              color: theme.text,
-              fontSize: 18,
-              fontWeight: 'bold',
-              marginBottom: 8,
-              lineHeight: 24,
+            <TouchableOpacity style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 20,
+              alignSelf: 'flex-start',
+              marginTop: 7
             }}>
-              Nonton bareng Ashiap Man 2022
-            </Text>
-            
-            <Text style={{
-              color: theme.textSecondary,
-              fontSize: 14,
-              lineHeight: 20,
-            }}>
-              Nobar Livestream Ashiap man 2022 disini
-            </Text>
+              <Text style={{
+                color: '#FFFFFF',
+                fontSize: 12,
+                fontWeight: 'bold',
+              }}>
+                Click here
+              </Text>
+            </TouchableOpacity>
           </View>
           
-          <TouchableOpacity style={{
-            backgroundColor: theme.primary,
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-            borderRadius: 8,
-            alignSelf: 'flex-start',
+          {/* Right Image */}
+          <View style={{
+            width: 120,
+            height: '100%',
           }}>
-            <Text style={{
-              color: '#FFFFFF',
-              fontSize: 14,
-              fontWeight: 'bold',
-            }}>
-              Click here
-            </Text>
-          </TouchableOpacity>
+            <Image
+              source={{ uri: 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
+              style={{
+                width: '100%',
+                height: '100%',
+              }}
+              resizeMode="cover"
+            />
+          </View>
         </View>
-        
-        {/* Right Image */}
-        <View style={{
-          width: 120,
-          height: '100%',
-        }}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/120x200/4A90E2/FFFFFF?text=ASHIAP+MAN' }}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-            resizeMode="cover"
-          />
-        </View>
-      </View>
-    </View>
-  );
+      </ImageBackground>
+    )
+  };
 
   if (isLoading && popularMovies.length === 0) {
     return (
@@ -330,11 +358,11 @@ export default function HomeScreen() {
         {/* Live Now Section */}
         <View style={{ marginBottom: 32 }}>
           <FlatList
-            data={[{ id: 1 }]} // Single item for now
+            data={[{ id: 1 }, {id: 2}, {id: 3}]} // Single item for now
             renderItem={renderLiveNowItem}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
+            contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
             pagingEnabled
           />
           
