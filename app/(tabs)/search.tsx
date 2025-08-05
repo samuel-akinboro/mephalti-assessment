@@ -7,6 +7,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { lightTheme, darkTheme, screenWidth } from '../../constants/Theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SearchScreen() {
   const { 
@@ -120,7 +121,9 @@ export default function SearchScreen() {
             paddingHorizontal: 16,
             paddingVertical: 12,
           }}>
-            <Text style={{ fontSize: 20, marginRight: 12 }}>🔍</Text>
+            <View style={{ marginRight: 12 }}>
+              <Ionicons name="search" size={24} color={theme.text} />
+            </View>
             <TextInput
               ref={searchInputRef}
               style={{
@@ -149,7 +152,7 @@ export default function SearchScreen() {
                 }}
                 style={{ marginLeft: 8 }}
               >
-                <Text style={{ fontSize: 20 }}>✕</Text>
+                <Ionicons name="close" size={24} color={theme.text} />
               </TouchableOpacity>
             )}
           </View>

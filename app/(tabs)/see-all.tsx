@@ -1,13 +1,12 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
-import { lightTheme, darkTheme } from '../../constants/Theme';
+import { lightTheme, darkTheme, screenWidth } from '../../constants/Theme';
 
 export default function SeeAllScreen() {
   const { type } = useLocalSearchParams<{ type: string }>();
@@ -56,6 +55,7 @@ export default function SeeAllScreen() {
       movie={item}
       onPress={() => router.push(`/movie-details?id=${item.id}`)}
       index={index}
+      cardWidth={(screenWidth - 52) / 2}
     />
   );
 
@@ -94,9 +94,15 @@ export default function SeeAllScreen() {
           <View style={{ width: 36 }} />
         </View>
         
-        <View style={{ padding: 20 }}>
-          <SkeletonLoader type="movie-card" count={8} />
-        </View>
+        <FlatList
+          data={Array(8).fill(0)}
+          renderItem={() => <SkeletonLoader type="movie-card-individual" cardWidth={(screenWidth - 52) / 2} />}
+          keyExtractor={(item, index) => `${index}`}
+          numColumns={2}
+          contentContainerStyle={{ padding: 20 }}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          showsVerticalScrollIndicator={false}
+        />
       </SafeAreaView>
     );
   }
@@ -147,6 +153,7 @@ export default function SeeAllScreen() {
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={{ padding: 20 }}
+        columnWrapperStyle={{ justifyContent: 'space-between' }}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMoreMovies}
         onEndReachedThreshold={0.1}
