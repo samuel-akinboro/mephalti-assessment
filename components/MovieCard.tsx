@@ -10,6 +10,7 @@ import Animated, {
 import { useMovieStore, Movie } from '../store/movieStore';
 import { getImageUrl } from '../config/api';
 import { lightTheme, darkTheme } from '../constants/Theme';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const cardWidth = width * 0.4;
@@ -80,7 +81,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0 
         }}
       >
         <View style={{
-          backgroundColor: theme.card,
+          // backgroundColor: theme.card,
           borderRadius: 12,
           shadowColor: theme.cardShadow,
           shadowOffset: { width: 0, height: 2 },
@@ -97,7 +98,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0 
               style={{
                 width: '100%',
                 height: cardWidth * 1.5,
-                borderTopLeftRadius: 12,
+                borderRadius: 20,
                 borderTopRightRadius: 12,
               }}
               resizeMode="cover"
@@ -118,17 +119,15 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0 
                 alignItems: 'center',
               }}
             >
-              <Text style={{ color: isFavorite(movie.id) ? '#FFD700' : '#FFFFFF', fontSize: 16 }}>
-                {isFavorite(movie.id) ? '★' : '☆'}
-              </Text>
+              <Ionicons size={16} name={isFavorite(movie.id) ? 'heart' : 'heart-outline'} color={isFavorite(movie.id) ? '#FFD700' : '#FFFFFF'} />
             </TouchableOpacity>
 
             {/* Rating Badge */}
             <View style={{
               position: 'absolute',
-              bottom: 8,
-              left: 8,
-              backgroundColor: theme.primary,
+              bottom: 10,
+              left: 10,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
               paddingHorizontal: 6,
               paddingVertical: 2,
               borderRadius: 4,
