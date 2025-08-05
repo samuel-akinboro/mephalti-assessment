@@ -63,9 +63,24 @@ export default function HomeScreen() {
             scale: interpolate(scrollX.value,
               [index-1, index, index+1],
               [1.4, 1, 1.4]
+            ),
+          },
+          {
+            translateX: interpolate(scrollX.value,
+              [index-1, index, index+1],
+              [15, 0, 15]
             )
           }
         ]
+      }
+    });
+
+    const textStyle = useAnimatedStyle(() => {
+      return {
+        opacity: interpolate(scrollX.value,
+          [index-1, index, index+1],
+          [0, 1, 0]
+        )
       }
     })
 
@@ -104,7 +119,7 @@ export default function HomeScreen() {
               }}
             />
 
-            <View>
+            <Animated.View style={textStyle}>
               <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -131,7 +146,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               
-                              <Text 
+                <Text 
                   style={{
                     color: '#fff',
                     fontSize: 18,
@@ -151,7 +166,7 @@ export default function HomeScreen() {
                 }}>
                   {item.overview}
                 </Text>
-            </View>
+            </Animated.View>
             
                          <TouchableOpacity 
                style={{
