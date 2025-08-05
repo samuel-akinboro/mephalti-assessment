@@ -257,7 +257,7 @@ export default function HomeScreen() {
             }}>
               Latest movies
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/see-all?type=latest')}>
               <Text style={{
                 color: theme.primary,
                 fontSize: 14,
@@ -294,7 +294,7 @@ export default function HomeScreen() {
             }}>
               Top rated
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/see-all?type=top-rated')}>
               <Text style={{
                 color: theme.primary,
                 fontSize: 14,

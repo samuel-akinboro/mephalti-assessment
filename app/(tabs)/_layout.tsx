@@ -48,6 +48,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="see-all"
+        options={{
+          href: null, // Hide from tab bar
+        }}
+      />
     </Tabs>
   );
 }
