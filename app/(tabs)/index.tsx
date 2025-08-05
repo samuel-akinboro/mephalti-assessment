@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -10,7 +10,7 @@ import Animated, {
   interpolate,
   Extrapolate 
 } from 'react-native-reanimated';
-import { useMovieStore, Movie } from '../../store/movieStore';
+import { useMovieStore, Movie, getImageUrl } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   } = useMovieStore();
   
   const theme = isDarkMode ? darkTheme : lightTheme;
+  const [activeLiveIndex, setActiveLiveIndex] = useState(0);
 
   useEffect(() => {
     fetchPopularMovies();
@@ -45,14 +46,13 @@ export default function HomeScreen() {
     />
   );
 
-  const renderLiveNowItem = ({ item, index }: { item: any; index: number }) => {
-    const CARD_WIDTH = width - 60;
+  const renderLiveNowItem = ({ item, index }: { item: Movie; index: number }) => {
+    const CARD_WIDTH = width - 40;
   
     return (
       <ImageBackground 
         style={{
           width: CARD_WIDTH,
-          // backgroundColor: theme.card,
           borderRadius: 16,
           overflow: 'hidden',
           shadowColor: theme.cardShadow,
@@ -61,7 +61,7 @@ export default function HomeScreen() {
           shadowRadius: 12,
           elevation: 8,
         }}
-        source={{ uri: 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
+        source={{ uri: getImageUrl(item.backdrop_path, 'large') || 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
       >
         <View style={{
           flexDirection: 'row',
@@ -111,53 +111,56 @@ export default function HomeScreen() {
                 </Text>
               </View>
               
-              <Text 
-                style={{
+                              <Text 
+                  style={{
+                    color: theme.text,
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    marginBottom: 8,
+                    lineHeight: 24,
+                  }}
+                  numberOfLines={2}
+                >
+                  {item.title}
+                </Text>
+                
+                <Text numberOfLines={2} style={{
                   color: theme.text,
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  marginBottom: 8,
-                  lineHeight: 24,
-                }}
-                numberOfLines={2}
-              >
-                Nonton bareng Ashiap Man 2022
-              </Text>
-              
-              <Text style={{
-                color: theme.text,
-                fontSize: 14,
-                lineHeight: 20,
-              }}>
-                Nobar Livestream Ashiap man 2022 disini
-              </Text>
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}>
+                  {item.overview}
+                </Text>
             </View>
             
-            <TouchableOpacity style={{
-              backgroundColor: theme.primary,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              borderRadius: 20,
-              alignSelf: 'flex-start',
-              marginTop: 7
-            }}>
-              <Text style={{
-                color: '#FFFFFF',
-                fontSize: 12,
-                fontWeight: 'bold',
-              }}>
-                Click here
-              </Text>
-            </TouchableOpacity>
+                         <TouchableOpacity 
+               style={{
+                 backgroundColor: theme.primary,
+                 paddingHorizontal: 20,
+                 paddingVertical: 10,
+                 borderRadius: 20,
+                 alignSelf: 'flex-start',
+                 marginTop: 7
+               }}
+               onPress={() => router.push(`/movie-details?id=${item.id}`)}
+             >
+               <Text style={{
+                 color: '#FFFFFF',
+                 fontSize: 12,
+                 fontWeight: 'bold',
+               }}>
+                 Watch Now
+               </Text>
+             </TouchableOpacity>
           </View>
           
           {/* Right Image */}
           <View style={{
-            width: 120,
+            width: CARD_WIDTH * 0.40,
             height: '100%',
           }}>
             <Image
-              source={{ uri: 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
+              source={{ uri: getImageUrl(item.backdrop_path, 'large') || 'https://placehold.jp/61d0f5/ffffff/120x120.png' }}
               style={{
                 width: '100%',
                 height: '100%',
@@ -358,12 +361,16 @@ export default function HomeScreen() {
         {/* Live Now Section */}
         <View style={{ marginBottom: 32 }}>
           <FlatList
-            data={[{ id: 1 }, {id: 2}, {id: 3}]} // Single item for now
+            data={popularMovies.slice(0, 5)}
             renderItem={renderLiveNowItem}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 20, gap: 20 }}
             pagingEnabled
+            onMomentumScrollEnd={(event) => {
+              const index = Math.round(event.nativeEvent.contentOffset.x / (width - 40 + 20));
+              setActiveLiveIndex(index);
+            }}
           />
           
           {/* Pagination Dots */}
@@ -372,14 +379,14 @@ export default function HomeScreen() {
             justifyContent: 'center',
             marginTop: 16,
           }}>
-            {[1, 2, 3, 4].map((_, index) => (
+            {popularMovies.slice(0, 5).map((_, index) => (
               <View
                 key={index}
                 style={{
                   width: 8,
                   height: 8,
                   borderRadius: 4,
-                  backgroundColor: index === 0 ? theme.primary : theme.border,
+                  backgroundColor: index === activeLiveIndex ? theme.primary : theme.border,
                   marginHorizontal: 4,
                 }}
               />
