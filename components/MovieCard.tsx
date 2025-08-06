@@ -4,8 +4,7 @@ import Animated, {
   useSharedValue, 
   useAnimatedStyle, 
   withSpring,
-  interpolate,
-  Extrapolate 
+  withDelay 
 } from 'react-native-reanimated';
 import { useMovieStore, Movie } from '../store/movieStore';
 import { getImageUrl } from '../config/api';
@@ -27,12 +26,13 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
   const theme = isDarkMode ? darkTheme : lightTheme;
   
   const scale = useSharedValue(1);
-  const translateY = useSharedValue(0);
+  const translateY = useSharedValue(20);
   const opacity = useSharedValue(0);
 
   React.useEffect(() => {
-    opacity.value = withSpring(1, { damping: 15 });
-    translateY.value = withSpring(0, { damping: 15 });
+    const delay = index * 100;
+    opacity.value = withDelay(delay, withSpring(1, { damping: 15 }));
+    translateY.value = withDelay(delay, withSpring(0, { damping: 15 }));
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -82,7 +82,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
         }}
       >
         <View style={{
-          // backgroundColor: theme.card,
           borderRadius: 12,
           shadowColor: theme.cardShadow,
           shadowOffset: { width: 0, height: 2 },
@@ -90,7 +89,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
           shadowRadius: 8,
           elevation: 4,
         }}>
-          {/* Poster */}
           <View style={{ position: 'relative' }}>
             <Image
               source={{ 
@@ -105,7 +103,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
               resizeMode="cover"
             />
             
-            {/* Favorite Button */}
             <TouchableOpacity
               onPress={handleFavoritePress}
               style={{
@@ -123,7 +120,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
               <Ionicons size={16} name={isFavorite(movie.id) ? 'heart' : 'heart-outline'} color={isFavorite(movie.id) ? '#FFD700' : '#FFFFFF'} />
             </TouchableOpacity>
 
-            {/* Rating Badge */}
             <View style={{
               position: 'absolute',
               bottom: 10,
@@ -139,7 +135,6 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
             </View>
           </View>
 
-          {/* Movie Info */}
           <View style={{ padding: 12 }}>
             <Text 
               style={{
@@ -166,4 +161,4 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress, index = 0,
       </TouchableOpacity>
     </Animated.View>
   );
-}; 
+};
