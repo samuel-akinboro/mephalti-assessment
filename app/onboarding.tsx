@@ -1,211 +1,219 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Dimensions, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring,
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
+  withSpring,
   interpolate,
-  Extrapolate 
+  Extrapolate,
 } from 'react-native-reanimated';
-import { useMovieStore } from '../store/movieStore';
-import { lightTheme, darkTheme } from '../constants/Theme';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-const onboardingData = [
+const slides = [
   {
-    title: 'Welcome to MovieApp',
-    subtitle: 'Discover the latest and greatest movies from around the world',
-    image: '🎬',
+    id: 1,
+    symbol: 'DT',
+    title: 'Discover trending\nmovies at a glance',
+    bgColor: '#000000', // Dark slate
+    color: '#FBBF24',   // Amber
   },
   {
-    title: 'Search & Explore',
-    subtitle: 'Find your favorite movies with our powerful search feature',
-    image: '🔍',
+    id: 2,
+    symbol: '🎞️',
+    title: 'See full movie\ndetails and ratings',
+    bgColor: '#000000', // Navy
+    color: '#60A5FA',   // Sky blue
   },
   {
-    title: 'Save Favorites',
-    subtitle: 'Keep track of movies you love with our favorites feature',
-    image: '❤️',
+    id: 3,
+    symbol: 'WT',
+    title: 'Watch trailers\nbefore you decide',
+    bgColor: '#000000', // Jet black
+    color: '#22C55E',   // Lime green
   },
 ];
 
 export default function OnboardingScreen() {
-  const { isDarkMode } = useMovieStore();
-  const theme = isDarkMode ? darkTheme : lightTheme;
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(1);
-  const scale = useSharedValue(1);
+  const progress = useSharedValue(0);
+  const slideIn = useSharedValue(0);
 
-  React.useEffect(() => {
-    translateX.value = withSpring(0, { damping: 15 });
-    opacity.value = withSpring(1, { damping: 15 });
-    scale.value = withSpring(1, { damping: 15 });
-  }, [currentIndex]);
+  useEffect(() => {
+    slideIn.value = 0;
+    slideIn.value = withTiming(1, { duration: 600 });
+    progress.value = withTiming(currentSlide / (slides.length - 1));
+  }, [currentSlide]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { scale: scale.value }
-    ],
-    opacity: opacity.value,
-  }));
-
-  const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      translateX.value = withTiming(-width, { duration: 300 });
-      opacity.value = withTiming(0, { duration: 300 });
-      scale.value = withTiming(0.8, { duration: 300 });
-      
-      setTimeout(() => {
-        setCurrentIndex(currentIndex + 1);
-      }, 300);
+  const handleNext = async () => {
+    if (currentSlide < slides.length - 1) {
+      setCurrentSlide(currentSlide + 1);
     } else {
-      handleFinish();
-    }
-  };
-
-  const handleFinish = async () => {
-    try {
       await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Error saving onboarding status:', error);
       router.replace('/(tabs)');
     }
   };
 
   const handleSkip = async () => {
-    try {
-      await AsyncStorage.setItem('hasSeenOnboarding', 'true');
-      router.replace('/(tabs)');
-    } catch (error) {
-      console.error('Error saving onboarding status:', error);
-      router.replace('/(tabs)');
-    }
+    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+    router.replace('/(tabs)');
   };
 
+  const slide = slides[currentSlide];
+
+  const progressBarStyle = useAnimatedStyle(() => ({
+    width: `${(progress.value + 0.01) * 100}%`,
+  }));
+
+  const symbolStyle = useAnimatedStyle(() => ({
+    opacity: slideIn.value,
+    transform: [
+      {
+        translateY: interpolate(
+          slideIn.value,
+          [0, 1],
+          [40, 0],
+          Extrapolate.CLAMP
+        ),
+      },
+    ],
+  }));
+
+  const titleStyle = useAnimatedStyle(() => ({
+    opacity: slideIn.value,
+    transform: [
+      {
+        translateY: interpolate(
+          slideIn.value,
+          [0, 1],
+          [60, 0],
+          Extrapolate.CLAMP
+        ),
+      },
+    ],
+  }));
+
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: theme.background,
-    }}>
-      {/* Skip Button */}
-      <TouchableOpacity
-        onPress={handleSkip}
-        style={{
-          position: 'absolute',
-          top: 60,
-          right: 20,
-          zIndex: 10,
-        }}
-      >
-        <Text style={{
-          color: theme.primary,
-          fontSize: 16,
-          fontWeight: '600',
-        }}>
-          Skip
-        </Text>
+    <View style={[styles.container, { backgroundColor: slide.bgColor }]}>
+      {/* Skip */}
+      <TouchableOpacity onPress={handleSkip} style={styles.skip}>
+        <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
 
       {/* Content */}
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 40,
-      }}>
-        <Animated.View style={[animatedStyle, { alignItems: 'center' }]}>
-          {/* Image */}
-          <View style={{
-            width: 200,
-            height: 200,
-            borderRadius: 100,
-            backgroundColor: theme.primary + '20',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: 40,
-          }}>
-            <Text style={{ fontSize: 80 }}>
-              {onboardingData[currentIndex].image}
-            </Text>
-          </View>
+      <View style={styles.content}>
+        <Animated.Text
+          style={[styles.symbol, { color: slide.color }, symbolStyle]}
+        >
+          {slide.symbol}
+        </Animated.Text>
 
-          {/* Title */}
-          <Text style={{
-            color: theme.text,
-            fontSize: 28,
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginBottom: 16,
-            lineHeight: 36,
-          }}>
-            {onboardingData[currentIndex].title}
-          </Text>
-
-          {/* Subtitle */}
-          <Text style={{
-            color: theme.textSecondary,
-            fontSize: 16,
-            textAlign: 'center',
-            lineHeight: 24,
-            marginBottom: 60,
-          }}>
-            {onboardingData[currentIndex].subtitle}
-          </Text>
-        </Animated.View>
+        <Animated.Text style={[styles.title, titleStyle]}>
+          {slide.title}
+        </Animated.Text>
       </View>
 
-      {/* Bottom Section */}
-      <View style={{
-        paddingHorizontal: 40,
-        paddingBottom: 60,
-      }}>
+      {/* Footer */}
+      <View style={styles.footer}>
         {/* Dots */}
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          marginBottom: 40,
-        }}>
-          {onboardingData.map((_, index) => (
+        <View style={styles.dots}>
+          {slides.map((_, index) => (
             <View
               key={index}
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: index === currentIndex ? theme.primary : theme.border,
-                marginHorizontal: 4,
-              }}
+              style={[
+                styles.dot,
+                index === currentSlide && styles.activeDot,
+              ]}
             />
           ))}
         </View>
 
-        {/* Button */}
-        <TouchableOpacity
-          onPress={handleNext}
-          style={{
-            backgroundColor: theme.primary,
-            paddingVertical: 16,
-            borderRadius: 12,
-            alignItems: 'center',
-          }}
-        >
-          <Text style={{
-            color: '#FFFFFF',
-            fontSize: 18,
-            fontWeight: 'bold',
-          }}>
-            {currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
-          </Text>
+        {/* Next Button */}
+        <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
+          <Ionicons
+            name={currentSlide === slides.length - 1 ? 'checkmark' : 'arrow-forward'}
+            size={24}
+            color="#000"
+          />
         </TouchableOpacity>
       </View>
     </View>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+    justifyContent: 'space-between',
+  },
+  skip: {
+    position: 'absolute',
+    top: 60,
+    right: 24,
+    zIndex: 10,
+  },
+  skipText: {
+    color: '#ffffffaa',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  symbol: {
+    fontSize: 100,
+    fontWeight: '900',
+    marginBottom: 40,
+  },
+  title: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 36,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dots: {
+    flexDirection: 'row',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ffffff55',
+    marginRight: 8,
+  },
+  activeDot: {
+    backgroundColor: '#fff',
+    width: 10,
+    height: 10,
+  },
+  nextButton: {
+    backgroundColor: '#fff',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

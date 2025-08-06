@@ -54,12 +54,12 @@ export default function TabLayout() {
           href: null, // Hide from tab bar
         }}
       />
-      <Tabs.Screen 
+      {/* <Tabs.Screen 
         name="movie-details" 
         options={{
           href: null, // Hide from tab bar
         }}
-      />
+      /> */}
     </Tabs>
   );
 }
