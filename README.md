@@ -1,6 +1,19 @@
-# MovieApp - React Native Movie Application
+# MovieApp - React Native Movie Application (Assessment)
 
 A modern, cross-platform movie application built with React Native, Expo Router, and TypeScript. The app allows users to browse popular movies, search for content, view detailed information, and save favorites locally.
+
+---
+
+## 📱 App Preview
+
+<div align="center">
+  <img src="./assets/images/preview-1.png" width="200" alt="Preview 1" />
+  <img src="./assets/images/preview-2.png" width="200" alt="Preview 2" />
+  <img src="./assets/images/preview-3.png" width="200" alt="Preview 3" />
+  <img src="./assets/images/preview-4.png" width="200" alt="Preview 4" />
+</div>
+
+---
 
 ## 🎬 Features
 
@@ -107,10 +120,10 @@ The app uses Zustand for state management with the following structure:
 - **Stack Navigation**: Movie details and onboarding screens
 - **Deep Linking**: Support for direct navigation to movie details
 
-### Styling (NativeWind)
-- **Utility-first CSS**: Rapid UI development
+### Styling (base stylesheet)
+<!-- - **Utility-first CSS**: Rapid UI development -->
 - **Theme System**: Consistent colors and spacing
-- **Responsive Design**: Adapts to different screen sizes
+<!-- - **Responsive Design**: Adapts to different screen sizes -->
 - **Dark Mode**: Complete theme switching
 
 ## 🎨 UI/UX Features
@@ -130,12 +143,6 @@ The app uses Zustand for state management with the following structure:
 
 ## 🔧 Configuration
 
-### Environment Variables
-Create a `.env` file in the root directory:
-```env
-TMDB_API_KEY=your_api_key_here
-```
-
 ### API Configuration
 The app is configured to use TMDb API v3. Update the API key in `store/movieStore.ts`:
 ```typescript
@@ -154,62 +161,5 @@ const TMDB_API_KEY = 'your_actual_api_key';
 
 ### Development Dependencies
 - `typescript`: Type safety
-- `nativewind`: Utility-first styling
-- `tailwindcss`: CSS framework
-
-## 🚀 Deployment
-
-### Building for Production
-```bash
-# Build for iOS
-expo build:ios
-
-# Build for Android
-expo build:android
-
-# Build for web
-expo build:web
-```
-
-### EAS Build (Recommended)
-```bash
-# Install EAS CLI
-npm install -g @expo/eas-cli
-
-# Configure EAS
-eas build:configure
-
-# Build for platforms
-eas build --platform ios
-eas build --platform android
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [The Movie Database](https://www.themoviedb.org/) for providing the movie data API
-- [Expo](https://expo.dev/) for the amazing React Native framework
-- [Zustand](https://github.com/pmndrs/zustand) for lightweight state management
-- [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) for smooth animations
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-1. Check the [Issues](../../issues) page
-2. Create a new issue with detailed information
-3. Contact the development team
-
----
 
 **Note**: Make sure to replace the TMDb API key with your own before running the application. The current placeholder will not work for API calls. 
