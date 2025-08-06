@@ -89,7 +89,7 @@ export default function SearchScreen() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView 
-        style={{ flex: 1 }}
+        style={{ flex: 1, paddingTop: Platform.OS === 'ios' ? 0 : 30 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >

@@ -98,10 +98,6 @@ function RootLayoutNav() {
             <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: true }} />
             <Stack.Screen 
               name="movie-details" 
-              options={{ 
-                headerShown: false,
-                presentation: 'card',
-              }} 
             />
           </>
         )}

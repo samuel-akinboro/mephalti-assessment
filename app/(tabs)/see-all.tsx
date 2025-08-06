@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, SafeAreaView, Platform } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMovieStore, Movie } from '../../store/movieStore';
 import { MovieCard } from '../../components/MovieCard';
@@ -115,6 +115,7 @@ export default function SeeAllScreen() {
     <SafeAreaView style={{
       flex: 1,
       backgroundColor: theme.background,
+      paddingTop: Platform.OS === 'ios' ? 0 : 30
     }}>
       {/* Header */}
       <View style={{

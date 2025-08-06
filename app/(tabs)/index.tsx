@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions, ImageBackground, SafeAreaView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, Image, Dimensions, ImageBackground, SafeAreaView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import Animated, { 
   useSharedValue, 
@@ -342,6 +342,7 @@ export default function HomeScreen() {
     <SafeAreaView style={{
       flex: 1,
       backgroundColor: theme.background,
+      paddingTop: Platform.OS === 'ios' ? 0 : 30
     }}>
       <ScrollView 
         showsVerticalScrollIndicator={false}

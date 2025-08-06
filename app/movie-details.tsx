@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Modal, SafeAreaView } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Modal, SafeAreaView, BackHandler, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
@@ -37,6 +37,25 @@ export default function MovieDetailsScreen() {
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [activeTab, setActiveTab] = useState<'cast' | 'crew'>('cast');
   const [showTrailer, setShowTrailer] = useState(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const webViewRef = useRef(null);
+
+  const onAndroidBackPress = useCallback(() => {
+    if (canGoBack) {
+      webViewRef.current?.goBack();
+      return true; // prevent default behavior (exit app)
+    }
+    return false;
+  }, [canGoBack]);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
+      return () => {
+        subscription.remove();
+      };
+    }
+  }, [onAndroidBackPress]);
 
   const titleAnim = useSharedValue(0);
   const infoAnim = useSharedValue(0);
@@ -154,7 +173,7 @@ export default function MovieDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: Platform.OS === 'ios' ? 0 : 40 }}>
         <SkeletonLoader type="movie-details" count={1} />
       </View>
     );
@@ -174,7 +193,7 @@ export default function MovieDetailsScreen() {
         <View style={{ height: POSTER_HEIGHT, position: 'relative' }}>
           <Image
             source={{ 
-              uri: getBackdropUrl(movieDetails.backdrop_path, 'medium') || 'https://via.placeholder.com/400x600'
+              uri: getBackdropUrl(movieDetails.backdrop_path, 'medium') || 'https://placehold.jp/20/0085FE/ffffff/400x600.png?text=No%20image'
             }}
             style={{
               width: '100%',
@@ -210,7 +229,7 @@ export default function MovieDetailsScreen() {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-              <Text style={{ fontSize: 24, color: theme.primary }}>▶</Text>
+              <Ionicons name='play' size={24} color={theme.primary} />
             </TouchableOpacity>
             <Text style={{
               color: '#FFFFFF',
@@ -282,9 +301,10 @@ export default function MovieDetailsScreen() {
               paddingVertical: 12,
               borderRadius: 8,
               marginRight: 12,
+              gap: 5
             }}>
-              <Text style={{ fontSize: 18, marginRight: 8, color: theme.text }}>⬇</Text>
-              <Text style={{ color: theme.text, fontSize: 14, fontWeight: '600' }}>
+              <Ionicons name='arrow-down' color='#fff' size={18} />
+              <Text style={{ color: theme.text, fontSize: 18, fontWeight: '400' }}>
                 Download
               </Text>
             </TouchableOpacity>
@@ -402,12 +422,12 @@ export default function MovieDetailsScreen() {
             alignItems: 'center',
           }}
         >
-          <Text style={{ color: '#FFFFFF', fontSize: 18 }}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
       </View>
 
       <Modal visible={showTrailer} animationType="slide">
-        <View style={{ flex: 1, backgroundColor: '#000' }}>
+        <View style={{ flex: 1, backgroundColor: theme.background }}>
           <TouchableOpacity
             onPress={() => setShowTrailer(false)}
             style={{
@@ -429,6 +449,11 @@ export default function MovieDetailsScreen() {
                 style={{ flex: 1 }}
                 javaScriptEnabled
                 source={{ uri: `https://www.youtube.com/embed/${trailerKey}?autoplay=1` }}
+                ref={webViewRef}
+                onLoadProgress={event => {
+                  // console.log(JSON.stringify(event.nativeEvent, null, 2));
+                  setCanGoBack(event.nativeEvent.canGoBack);
+                }}
               />
             </SafeAreaView>
           ) : (
