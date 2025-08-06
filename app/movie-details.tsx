@@ -38,6 +38,8 @@ export default function MovieDetailsScreen() {
     addToFavorites,
     removeFromFavorites
   } = useMovieStore();
+
+  // console.log(JSON.stringify(movieDetails.videos, null, 2));
   
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [activeTab, setActiveTab] = useState<'cast' | 'crew'>('cast');
@@ -114,7 +116,7 @@ export default function MovieDetailsScreen() {
   };
 
   const renderCastItem = ({ item }: { item: Cast }) => (
-    <TouchableOpacity onPress={() => console.log(item)} style={{
+    <View style={{
       alignItems: 'center',
       marginRight: 20,
       width: 80,
@@ -147,7 +149,7 @@ export default function MovieDetailsScreen() {
       }} numberOfLines={1}>
         {item.character}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
 
   if (isLoading) {
