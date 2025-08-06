@@ -114,13 +114,13 @@ export default function HomeScreen() {
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0
+                bottom: 0,
+                backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'gray'
               },
               // textStyle
             ]}>
               <BlurView
                 intensity={40}
-                experimentalBlurMethod='dimezisBlurView'
                 style={{
                   width: 'auto',
                   height: '100%'
@@ -222,6 +222,7 @@ export default function HomeScreen() {
       <SafeAreaView style={{
         flex: 1,
         backgroundColor: theme.background,
+        paddingTop: Platform.OS === 'ios' ? 0 : 30
       }}>
         <ScrollView 
           showsVerticalScrollIndicator={false}

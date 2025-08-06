@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Modal, SafeAreaView, BackHandler, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, FlatList, Modal, SafeAreaView, BackHandler, Platform, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withDelay } from 'react-native-reanimated';
@@ -10,7 +10,6 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../constants/Theme';
-import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
@@ -36,26 +35,6 @@ export default function MovieDetailsScreen() {
 
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [activeTab, setActiveTab] = useState<'cast' | 'crew'>('cast');
-  const [showTrailer, setShowTrailer] = useState(false);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const webViewRef = useRef(null);
-
-  const onAndroidBackPress = useCallback(() => {
-    if (canGoBack) {
-      webViewRef.current?.goBack();
-      return true; // prevent default behavior (exit app)
-    }
-    return false;
-  }, [canGoBack]);
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const subscription = BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
-      return () => {
-        subscription.remove();
-      };
-    }
-  }, [onAndroidBackPress]);
 
   const titleAnim = useSharedValue(0);
   const infoAnim = useSharedValue(0);
@@ -103,6 +82,12 @@ export default function MovieDetailsScreen() {
       castAnim.value = withDelay(400, withTiming(1, { duration: 500 }));
     }
   }, [isLoading, movieDetails]);
+
+  const handlePlayTrailer = () => {
+    if (trailerKey) {
+      Linking.openURL(`https://www.youtube.com/watch?v=${trailerKey}`);
+    }
+  };
 
   const handleFavoritePress = () => {
     if (movieDetails) {
@@ -179,7 +164,7 @@ export default function MovieDetailsScreen() {
     );
   }
 
-  if (error || !movieDetails) {
+  if ((!isLoading && error) || !movieDetails) {
     return <ErrorMessage message={error || 'Movie not found'} onRetry={() => id && fetchMovieDetails(parseInt(id))} />;
   }
 
@@ -220,7 +205,7 @@ export default function MovieDetailsScreen() {
             transform: [{ translateX: -30 }, { translateY: -30 }],
           }}>
             <TouchableOpacity
-              onPress={() => setShowTrailer(true)}
+              onPress={handlePlayTrailer}
               style={{
                 width: 60,
                 height: 60,
@@ -303,13 +288,13 @@ export default function MovieDetailsScreen() {
               marginRight: 12,
               gap: 5
             }}>
-              <Ionicons name='arrow-down' color='#fff' size={18} />
+              <Ionicons name='arrow-down' color={theme.text} size={18} />
               <Text style={{ color: theme.text, fontSize: 18, fontWeight: '400' }}>
                 Download
               </Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={{
+            <TouchableOpacity onPress={handlePlayTrailer} style={{
               flex: 1,
               backgroundColor: theme.primary,
               paddingVertical: 12,
@@ -425,44 +410,6 @@ export default function MovieDetailsScreen() {
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
       </View>
-
-      <Modal visible={showTrailer} animationType="slide">
-        <View style={{ flex: 1, backgroundColor: theme.background }}>
-          <TouchableOpacity
-            onPress={() => setShowTrailer(false)}
-            style={{
-              position: 'absolute',
-              top: insets.top + 16,
-              right: 20,
-              zIndex: 10,
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              padding: 10,
-              borderRadius: 20,
-            }}
-          >
-            <Ionicons name="close" size={24} color="white" />
-          </TouchableOpacity>
-
-          {trailerKey ? (
-            <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
-              <WebView
-                style={{ flex: 1 }}
-                javaScriptEnabled
-                source={{ uri: `https://www.youtube.com/embed/${trailerKey}?autoplay=1` }}
-                ref={webViewRef}
-                onLoadProgress={event => {
-                  // console.log(JSON.stringify(event.nativeEvent, null, 2));
-                  setCanGoBack(event.nativeEvent.canGoBack);
-                }}
-              />
-            </SafeAreaView>
-          ) : (
-            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>
-              No trailer available.
-            </Text>
-          )}
-        </View>
-      </Modal>
     </View>
   );
 }
