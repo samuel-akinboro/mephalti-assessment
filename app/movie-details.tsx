@@ -114,14 +114,14 @@ export default function MovieDetailsScreen() {
   };
 
   const renderCastItem = ({ item }: { item: Cast }) => (
-    <View style={{
+    <TouchableOpacity onPress={() => console.log(item)} style={{
       alignItems: 'center',
       marginRight: 20,
       width: 80,
     }}>
       <Image
         source={{ 
-          uri: getProfileUrl(item.profile_path, 'medium') || 'https://via.placeholder.com/80x80'
+          uri: item.profile_path ? getProfileUrl(item.profile_path, 'medium') : `https://placehold.jp/20/0085FE/ffffff/90x90.png?text=${item.name?.split(' ')[0][0] + item.name?.split(' ')[1][0]}&css=%7B%22display%22%3A%22%20flex%22%2C%22justify-content%22%3A%22%20center%22%2C%22align-items%22%3A%22%20center%22%7D`
         }}
         style={{
           width: 60,
@@ -147,7 +147,7 @@ export default function MovieDetailsScreen() {
       }} numberOfLines={1}>
         {item.character}
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 
   if (isLoading) {
@@ -227,7 +227,7 @@ export default function MovieDetailsScreen() {
 
         {/* Movie Info (Animated) */}
         <View style={{
-          paddingHorizontal: 20,
+          // paddingHorizontal: 20,
           marginTop: -80, // Negative margin to pull content over the poster gradient
         }}>
           {/* Title */}
@@ -237,6 +237,7 @@ export default function MovieDetailsScreen() {
             fontWeight: 'bold',
             marginBottom: 12,
             lineHeight: 36,
+            paddingHorizontal: 20,
           }, animatedTitleStyle]}>
             {movieDetails.title}
           </AnimatedText>
@@ -246,6 +247,7 @@ export default function MovieDetailsScreen() {
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: 20,
+            paddingHorizontal: 20,
           }, animatedInfoStyle]}>
             <View style={{
               backgroundColor: theme.primary,
@@ -276,6 +278,7 @@ export default function MovieDetailsScreen() {
           <AnimatedView style={[{
             flexDirection: 'row',
             marginBottom: 24,
+            paddingHorizontal: 20,
           }, animatedButtonsStyle]}>
             <TouchableOpacity style={{
               flexDirection: 'row',
@@ -311,6 +314,7 @@ export default function MovieDetailsScreen() {
             fontSize: 16,
             lineHeight: 24,
             marginBottom: 24,
+            paddingHorizontal: 20,
           }, animatedSynopsisStyle]}>
             {movieDetails.overview}
           </AnimatedText>
@@ -322,6 +326,7 @@ export default function MovieDetailsScreen() {
               justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: 16,
+              paddingHorizontal: 20,
             }}>
               <View style={{ flexDirection: 'row' }}>
                 <TouchableOpacity
@@ -377,6 +382,7 @@ export default function MovieDetailsScreen() {
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
             />
           </AnimatedView>
         </View>
