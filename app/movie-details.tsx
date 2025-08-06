@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
-  withSpring,
   withTiming,
+  withDelay,
   interpolate,
-  Extrapolate 
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useMovieStore, Cast } from '../store/movieStore';
 import { getImageUrl, getBackdropUrl, getProfileUrl } from '../config/api';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -17,10 +17,17 @@ import { ErrorMessage } from '../components/ErrorMessage';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import { lightTheme, darkTheme } from '../constants/Theme';
 
+// Animated components
+const AnimatedView = Animated.createAnimatedComponent(View);
+const AnimatedText = Animated.createAnimatedComponent(Text);
+const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+
 const { width, height } = Dimensions.get('window');
+const POSTER_HEIGHT = height * 0.6;
 
 export default function MovieDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
   const { 
     isDarkMode, 
     movieDetails, 
@@ -35,11 +42,55 @@ export default function MovieDetailsScreen() {
   const theme = isDarkMode ? darkTheme : lightTheme;
   const [activeTab, setActiveTab] = useState<'cast' | 'crew'>('cast');
 
+  // Reanimated shared values for staggered entry animations
+  const titleAnim = useSharedValue(0);
+  const infoAnim = useSharedValue(0);
+  const buttonsAnim = useSharedValue(0);
+  const synopsisAnim = useSharedValue(0);
+  const castAnim = useSharedValue(0);
+
+  // Animated styles for each individual element
+  const animatedTitleStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(titleAnim.value, { duration: 500 }),
+    transform: [{ translateY: withTiming(titleAnim.value === 1 ? 0 : 30, { duration: 500 }) }],
+  }));
+
+  const animatedInfoStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(infoAnim.value, { duration: 500 }),
+    transform: [{ translateY: withTiming(infoAnim.value === 1 ? 0 : 30, { duration: 500 }) }],
+  }));
+  
+  const animatedButtonsStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(buttonsAnim.value, { duration: 500 }),
+    transform: [{ translateY: withTiming(buttonsAnim.value === 1 ? 0 : 30, { duration: 500 }) }],
+  }));
+  
+  const animatedSynopsisStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(synopsisAnim.value, { duration: 500 }),
+    transform: [{ translateY: withTiming(synopsisAnim.value === 1 ? 0 : 30, { duration: 500 }) }],
+  }));
+
+  const animatedCastStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(castAnim.value, { duration: 500 }),
+    transform: [{ translateY: withTiming(castAnim.value === 1 ? 0 : 30, { duration: 500 }) }],
+  }));
+  
   useEffect(() => {
     if (id) {
       fetchMovieDetails(parseInt(id));
     }
   }, [id]);
+
+  useEffect(() => {
+    if (!isLoading && movieDetails) {
+      // Trigger the staggered entry animations
+      titleAnim.value = withTiming(1, { duration: 500 });
+      infoAnim.value = withDelay(100, withTiming(1, { duration: 500 }));
+      buttonsAnim.value = withDelay(200, withTiming(1, { duration: 500 }));
+      synopsisAnim.value = withDelay(300, withTiming(1, { duration: 500 }));
+      castAnim.value = withDelay(400, withTiming(1, { duration: 500 }));
+    }
+  }, [isLoading, movieDetails]);
 
   const handleFavoritePress = () => {
     if (movieDetails) {
@@ -102,17 +153,7 @@ export default function MovieDetailsScreen() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.background }}>
-        {/* Backdrop Skeleton */}
-        <View style={{ height: height * 0.5, backgroundColor: theme.border }} />
-        
-        {/* Content Skeleton */}
-        <ScrollView 
-          style={{ flex: 1 }}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        >
-          <SkeletonLoader type="movie-details" count={1} />
-        </ScrollView>
+        <SkeletonLoader type="movie-details" count={1} />
       </View>
     );
   }
@@ -123,124 +164,89 @@ export default function MovieDetailsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      {/* Backdrop Image */}
-      <View style={{ height: height * 0.5, position: 'relative' }}>
-        <Image
-          source={{ 
-            uri: getBackdropUrl(movieDetails.backdrop_path, 'medium') || 'https://via.placeholder.com/400x600'
-          }}
-          style={{
-            width: '100%',
-            height: '100%',
-          }}
-          resizeMode="cover"
-        />
-        
-        {/* Gradient Overlay */}
-        <View style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 100,
-          backgroundColor: theme.background,
-          opacity: 0.8,
-        }} />
-        
-        {/* Header Actions */}
-        <SafeAreaView style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: 20,
-          paddingVertical: 16,
-        }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              borderRadius: 20,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontSize: 18 }}>←</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              borderRadius: 20,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontSize: 18 }}>⋯</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-
-        {/* Play Trailer Button */}
-        <View style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: [{ translateX: -30 }, { translateY: -30 }],
-        }}>
-          <TouchableOpacity style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <Text style={{ fontSize: 24 }}>▶</Text>
-          </TouchableOpacity>
-          <Text style={{
-            color: '#FFFFFF',
-            fontSize: 14,
-            textAlign: 'center',
-            marginTop: 8,
-            textShadowColor: 'rgba(0, 0, 0, 0.8)',
-            textShadowOffset: { width: 0, height: 1 },
-            textShadowRadius: 3,
-          }}>
-            Play trailer
-          </Text>
-        </View>
-      </View>
-
-      {/* Movie Info */}
-      <ScrollView 
+      <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        <View style={{ padding: 20 }}>
-          {/* Title and Basic Info */}
-          <Text style={{
+        {/* Backdrop Image and its elements */}
+        <View style={{ height: POSTER_HEIGHT, position: 'relative' }}>
+          <Image
+            source={{ 
+              uri: getBackdropUrl(movieDetails.backdrop_path, 'medium') || 'https://via.placeholder.com/400x600'
+            }}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+          
+          {/* Gradient Overlay */}
+          <LinearGradient
+            colors={['transparent', theme.background]}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 100,
+            }}
+          />
+          
+          {/* Play Trailer Button */}
+          <View style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: [{ translateX: -30 }, { translateY: -30 }],
+          }}>
+            <TouchableOpacity style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 24, color: theme.primary }}>▶</Text>
+            </TouchableOpacity>
+            <Text style={{
+              color: '#FFFFFF',
+              fontSize: 14,
+              textAlign: 'center',
+              marginTop: 8,
+              textShadowColor: 'rgba(0, 0, 0, 0.8)',
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 3,
+            }}>
+              Play trailer
+            </Text>
+          </View>
+        </View>
+
+        {/* Movie Info (Animated) */}
+        <View style={{
+          paddingHorizontal: 20,
+          marginTop: -80, // Negative margin to pull content over the poster gradient
+        }}>
+          {/* Title */}
+          <AnimatedText style={[{
             color: theme.text,
             fontSize: 28,
             fontWeight: 'bold',
             marginBottom: 12,
             lineHeight: 36,
-          }}>
+          }, animatedTitleStyle]}>
             {movieDetails.title}
-          </Text>
+          </AnimatedText>
 
-          <View style={{
+          {/* Basic Info */}
+          <AnimatedView style={[{
             flexDirection: 'row',
             alignItems: 'center',
             marginBottom: 20,
-          }}>
+          }, animatedInfoStyle]}>
             <View style={{
               backgroundColor: theme.primary,
               paddingHorizontal: 8,
@@ -264,13 +270,13 @@ export default function MovieDetailsScreen() {
             <Text style={{ color: theme.textSecondary, fontSize: 14 }}>
               {formatDate(movieDetails.release_date)}
             </Text>
-          </View>
+          </AnimatedView>
 
           {/* Action Buttons */}
-          <View style={{
+          <AnimatedView style={[{
             flexDirection: 'row',
             marginBottom: 24,
-          }}>
+          }, animatedButtonsStyle]}>
             <TouchableOpacity style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -280,7 +286,7 @@ export default function MovieDetailsScreen() {
               borderRadius: 8,
               marginRight: 12,
             }}>
-              <Text style={{ fontSize: 18, marginRight: 8 }}>⬇</Text>
+              <Text style={{ fontSize: 18, marginRight: 8, color: theme.text }}>⬇</Text>
               <Text style={{ color: theme.text, fontSize: 14, fontWeight: '600' }}>
                 Download
               </Text>
@@ -297,20 +303,20 @@ export default function MovieDetailsScreen() {
                 Play now
               </Text>
             </TouchableOpacity>
-          </View>
+          </AnimatedView>
 
           {/* Synopsis */}
-          <Text style={{
+          <AnimatedText style={[{
             color: theme.text,
             fontSize: 16,
             lineHeight: 24,
             marginBottom: 24,
-          }}>
+          }, animatedSynopsisStyle]}>
             {movieDetails.overview}
-          </Text>
+          </AnimatedText>
 
           {/* Cast & Crew */}
-          <View style={{ marginBottom: 20 }}>
+          <AnimatedView style={[{ marginBottom: 20 }, animatedCastStyle]}>
             <View style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -372,9 +378,36 @@ export default function MovieDetailsScreen() {
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id.toString()}
             />
-          </View>
+          </AnimatedView>
         </View>
       </ScrollView>
+
+      {/* Header Actions (Fixed) */}
+      <View style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: insets.top + 16, // Using safe area inset with a little extra padding
+      }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            borderRadius: 20,
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: 18 }}>←</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-} 
+}
